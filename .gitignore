@@ -3,3 +3,5 @@
 *.xlsx
 build/
 dist/
+kb2mssb/
+kb2mssb.zip

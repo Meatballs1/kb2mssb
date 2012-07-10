@@ -53,7 +53,11 @@ def main():
         return
 
     if not options.local:
-        print "[*] Sysinfo file(s) found: %s" % (', '.join(sysinfo_paths))
+        if len(sysinfo_paths) < 1:
+            print "[-] No files containing 'sysinfo' found"
+            return
+        else:
+            print "[*] Sysinfo file(s) found: %s" % (', '.join(sysinfo_paths))
 
     with ZipFile(bulletin_file_path, 'r') as bulletin_zip:
         try:
