@@ -147,9 +147,9 @@ def setOptionParser():
     usage = "Usage: %prog [options]"
     parser = OptionParser(usage=usage)
     parser.add_option("-l", "--local", dest="local", action="store_true", default=False,
-        help="Inspect local systeminfo file (outputs to console)")
+        help="inspect local systeminfo file")
     parser.add_option("-d", "--download", dest="download", action="store_true", default=False,
-        help="Download the Bulletin Spreadsheet")
+        help="download the bulletin spreadsheet")
 
     return parser.parse_args()
 

@@ -1,0 +1,16 @@
+http://rewtdance.blogspot.com
+
+Place 'systeminfo' output in this folder (e.g. systeminfo > sysinfo.txt)
+Run kb2mssb.py (use -d to download the bulletin spreadsheet from http://go.microsoft.com/fwlink/?LinkID=245778 if you haven't already.)
+
+It will search for any file containing 'sysinfo' within the filename parse them and output to filename.csv.
+It searches for 'BulletinSearch' in filenames to find the spreadsheet. It will match the first result so don't keep old versions in the same folder.
+
+Specifying the -l option will call systeminfo on the current system and output the results to local_results.csv.
+
+Usage: kb2mssb.py [options]
+
+Options:
+  -h, --help      show this help message and exit
+  -l, --local     inspect local systeminfo file
+  -d, --download  download the bulletin spreadsheet
