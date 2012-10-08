@@ -19,6 +19,7 @@ import xml.etree.ElementTree as ET
 import re
 from datetime import date, timedelta
 from optparse import OptionParser
+import io
 
 namespace = '{http://schemas.openxmlformats.org/spreadsheetml/2006/main}'
 
@@ -42,9 +43,14 @@ def main():
                     break
 
         if not options.local:
-            if "sysinfo" in file:
-                if ".csv" not in file:
-                    sysinfo_paths.append("%s\\%s" % (current_dir, file))
+            if options.wmic:
+                if "qfe" in file:
+                    if ".csv" not in file:
+                        sysinfo_paths.append("%s\\%s" % (current_dir, file))                
+            else:
+                if "sysinfo" in file:
+                    if ".csv" not in file:
+                        sysinfo_paths.append("%s\\%s" % (current_dir, file))
 
     if bulletin_file_path:    
         print "[*] Bulletin file found: %s" % (bulletin_file_path)
@@ -76,10 +82,16 @@ def main():
         output_results(found_kbs, console=True)
     else:
         for sysfile in sysinfo_paths:
-            with open(sysfile, 'r') as systeminfo:
-                print "[*] Parsing system info: %s" % (sysfile)
-                kbs = parse_systeminfo(systeminfo)
-                print "[+] Found %i installed KBs" % (len(kbs))
+            if options.wmic:
+                with io.open(sysfile, 'r', encoding = 'utf-16') as systeminfo:
+                    print "[*] Parsing system info: %s" % (sysfile)
+                    kbs = parse_systeminfo(systeminfo)
+                    print "[+] Found %i installed KBs" % (len(kbs))                
+            else:
+                with open(sysfile, 'r') as systeminfo:
+                    print "[*] Parsing system info: %s" % (sysfile)
+                    kbs = parse_systeminfo(systeminfo)
+                    print "[+] Found %i installed KBs" % (len(kbs))
 
             print "[*] Matching Security Bulletin Values"
             found_kbs = find_kbs(kbs, tree)
@@ -147,6 +159,25 @@ def parse_systeminfo(systeminfo):
             kbs.append(kb)
     return kbs
 
+def parse_wmic(systeminfo):
+    kbs = []
+
+    kb_regex = re.compile('KB[0-9]+')
+    while 1:
+        line = systeminfo.readline()
+        if not line:
+            break
+
+        line = line.encode('utf8') 
+
+        print line
+        match = kb_regex.search(line)
+        
+        if match:
+            kb = match.group().lstrip('KB')
+            kbs.append(kb)
+    return kbs
+
 def setOptionParser():
     usage = "Usage: %prog [options]"
     parser = OptionParser(usage=usage)
@@ -154,6 +185,8 @@ def setOptionParser():
         help="inspect local systeminfo file")
     parser.add_option("-d", "--download", dest="download", action="store_true", default=False,
         help="download the bulletin spreadsheet")
+    parser.add_option("-w", "--wmic", dest="wmic", action="store_true", default=False,
+                        help="Parse wmic qfe list output.")
 
     return parser.parse_args()
 
