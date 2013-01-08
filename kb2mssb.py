@@ -74,6 +74,7 @@ def main():
         tree = ET.ElementTree()
         ET.register_namespace('xlsx', namespace)
         tree.parse(worksheet)
+        strings = load_shared_strings(bulletin_zip)
 
     if options.local:
         kbs = parse_systeminfo(run_sysinfo())
@@ -94,22 +95,35 @@ def main():
                     print "[+] Found %i installed KBs" % (len(kbs))
 
             print "[*] Matching Security Bulletin Values"
-            found_kbs = find_kbs(kbs, tree)
+            found_kbs = find_kbs(kbs, tree, strings)
 
             outfile = sysfile + ".csv"
             output_results(found_kbs, path=outfile)
             
-def get_cell_value(cell):
-    for value in cell.itertext():
-        return value
+def get_cell_value(cell, strings):
+    if 't' in  cell.attrib:
+        for value in cell.itertext():
+            return strings[int(value)].text
+        else:
+            return ""
+    elif 's' in cell.attrib:
+        for value in cell.itertext():
+            return value
+
+def load_shared_strings(zipfile):
+    shared_strings = zipfile.open('xl/sharedStrings.xml')
+    tree = ET.ElementTree()
+    ET.register_namespace('xlsx', namespace)
+    tree.parse(shared_strings)
+    return tree.findall('./{0}si/{0}t'.format(namespace))
 
 def convert_oa_date(oa_date):
     kb_date = date(1900,1,1)
-    delta = timedelta(days=int(oa_date))
+    delta = timedelta(days=int(oa_date)-1)
     kb_date = kb_date + delta
     return kb_date.isoformat()
 
-def find_kbs(kb_list, tree):
+def find_kbs(kb_list, tree, strings):
     kb_matches = []
 
     rows = tree.findall('./{0}sheetData/{0}row'.format(namespace))
@@ -117,23 +131,37 @@ def find_kbs(kb_list, tree):
         if len(kb_list) < 1:
             break
         
-        row_number = row.get('r')
-        if row_number < 1:
+        row_number = int(row.get('r'))
+        if row_number < 2:
             continue
 
         cells = row.findall('./{0}c'.format(namespace))
-        kb = get_cell_value(cells[7])
 
+        for cell in cells:
+            row_char = cell.attrib['r'][0]
+            if row_char is 'C':
+                kb = get_cell_value(cell, strings)
+            elif row_char is 'A':
+                date = convert_oa_date(get_cell_value(cell, strings))
+            elif row_char is 'B':
+                mssb = get_cell_value(cell,strings)
+            elif row_char is 'K':
+                severity = get_cell_value(cell,strings)
+            elif row_char is 'N':
+                 cves = get_cell_value(cell,strings)
+            elif row_char is 'H':
+                comp_kb = get_cell_value(cell, strings)
+                 
         try:
-            kb_list.remove(kb)
+                kb_list.remove(kb)
         except:
-            continue
+            try:
+                kb_list.remove(comp_kb)
+                kb = comp_kb
+            except:
+                continue
 
-        date = convert_oa_date(get_cell_value(cells[0]))
-        mssb = get_cell_value(cells[1])
-
-        severity = get_cell_value(cells[10])
-        cves = get_cell_value(cells[14])
+       # print "%s %s %s %s %s" % (kb, date, mssb, severity, cves)
 
         kb_match = dict(kb=kb, date=date, mssb=mssb, severity=severity, cves=cves)
         kb_matches.append(kb_match)
