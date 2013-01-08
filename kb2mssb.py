@@ -119,7 +119,7 @@ def load_shared_strings(zipfile):
 
 def convert_oa_date(oa_date):
     kb_date = date(1900,1,1)
-    delta = timedelta(days=int(oa_date)-1)
+    delta = timedelta(days=int(oa_date))
     kb_date = kb_date + delta
     return kb_date.isoformat()
 
