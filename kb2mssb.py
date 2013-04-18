@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+﻿#!/usr/bin/env python2.7
 # Searches current folder for any files containing 'sysinfo' (sysinfo.txt, computer.sysinfo etc)
 # Searches current folder for a MS bulletin spreadsheet containing 'BulletinSearch'
 #
@@ -20,6 +20,7 @@ import re
 from datetime import date, timedelta
 from optparse import OptionParser
 import io
+from bs4 import BeautifulSoup
 
 namespace = '{http://schemas.openxmlformats.org/spreadsheetml/2006/main}'
 
@@ -79,7 +80,7 @@ def main():
     if options.local:
         kbs = parse_systeminfo(run_sysinfo())
         print "[*] Matching Security Bulletin Values"
-        found_kbs = find_kbs(kbs, tree)
+        found_kbs = find_kbs(kbs, tree, strings)
         output_results(found_kbs, console=True)
     else:
         for sysfile in sysinfo_paths:
@@ -243,6 +244,15 @@ def download_bulletins():
     try:
         print "[*] Attempting to download"
         req = urllib2.urlopen(url)
+        soup = BeautifulSoup(req.read())
+        anchors = soup.findAll('a')
+        links = [a['href'] for a in anchors if a.has_key('href')]
+        for l in links:
+            if ".xlsx" in l:
+                   file = l
+                    
+
+        req = urllib2.urlopen(file)
         remote_filename = urlparse(req.geturl())[2].split('/')[-1]
         local_filename = "%s\\%s" % (os.getcwd(), remote_filename)
         with open(local_filename, 'wb') as download_file:
