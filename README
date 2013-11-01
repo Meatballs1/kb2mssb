@@ -8,9 +8,12 @@ It searches for 'BulletinSearch' in filenames to find the spreadsheet. It will m
 
 Specifying the -l option will call systeminfo on the current system and output the results to local_results.csv.
 
+Using the -w flag will now look for files containing 'qfe' as a result of running ```wmic qfe list``` instead of systeminfo files. This is probably more accurate than systeminfo
+
 Usage: kb2mssb.py [options]
 
 Options:
   -h, --help      show this help message and exit
   -l, --local     inspect local systeminfo file
   -d, --download  download the bulletin spreadsheet
+  -w, --wmic      Parse wmic qfe list output (wmic qfe list > qfe.txt)
