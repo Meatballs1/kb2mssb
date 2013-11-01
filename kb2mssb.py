@@ -4,7 +4,7 @@
 #
 # Parses the KB values from sysinfo files, matches them with values in the bulletin database
 # outputs results to filename.csv
-#
+# -w will attempt to parse wmic files (with qfe in the name)
 # -l will call systeminfo and parse the results for the current machine
 # -d will attempt to download a new bulletin file from MS
 #
@@ -221,7 +221,7 @@ def setOptionParser():
     parser.add_option("-d", "--download", dest="download", action="store_true", default=False,
         help="download the bulletin spreadsheet")
     parser.add_option("-w", "--wmic", dest="wmic", action="store_true", default=False,
-                        help="Parse wmic qfe list output.")
+                        help="Parse wmic qfe list output (wmic qfe list > qfe.txt)")
 
     return parser.parse_args()
 
