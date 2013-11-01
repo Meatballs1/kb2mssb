@@ -104,7 +104,10 @@ def main():
 def get_cell_value(cell, strings):
     if 't' in  cell.attrib:
         for value in cell.itertext():
-            return strings[int(value)].text
+            if strings:
+                return strings[int(value)].text
+            else:
+                return value
         else:
             return ""
     elif 's' in cell.attrib:
@@ -112,7 +115,10 @@ def get_cell_value(cell, strings):
             return value
 
 def load_shared_strings(zipfile):
-    shared_strings = zipfile.open('xl/sharedStrings.xml')
+    try:
+        shared_strings = zipfile.open('xl/sharedStrings.xml')
+    except:
+        return None
     tree = ET.ElementTree()
     ET.register_namespace('xlsx', namespace)
     tree.parse(shared_strings)
