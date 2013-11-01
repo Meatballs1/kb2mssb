@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python2.7
+#!/usr/bin/env python2.7
 # Searches current folder for any files containing 'sysinfo' (sysinfo.txt, computer.sysinfo etc)
 # Searches current folder for a MS bulletin spreadsheet containing 'BulletinSearch'
 #
@@ -245,14 +245,16 @@ def download_bulletins():
         print "[*] Attempting to download"
         req = urllib2.urlopen(url)
         soup = BeautifulSoup(req.read())
-        anchors = soup.findAll('a')
-        links = [a['href'] for a in anchors if a.has_key('href')]
-        for l in links:
-            if ".xlsx" in l:
-                   file = l
+        scripts = soup.findAll('script')
+        pattern = re.compile(r"http.*xlsx")
+        for s in scripts:
+            if s.string:
+                if m:
+                    l = m.group()
+                else:
+                    return None
                     
-
-        req = urllib2.urlopen(file)
+        req = urllib2.urlopen(l)
         remote_filename = urlparse(req.geturl())[2].split('/')[-1]
         local_filename = "%s\\%s" % (os.getcwd(), remote_filename)
         with open(local_filename, 'wb') as download_file:
