@@ -253,18 +253,21 @@ def download_bulletins():
         soup = BeautifulSoup(req.read())
         scripts = soup.findAll('script')
         pattern = re.compile(r"http.*xlsx")
+        l = None
         for s in scripts:
             if s.string:
+                m = pattern.search(s.string)
                 if m:
                     l = m.group()
                 else:
-                    return None
-                    
-        req = urllib2.urlopen(l)
-        remote_filename = urlparse(req.geturl())[2].split('/')[-1]
-        local_filename = "%s\\%s" % (os.getcwd(), remote_filename)
-        with open(local_filename, 'wb') as download_file:
-            download_file.write(req.read())
+                    continue
+        
+        if l:            
+            req = urllib2.urlopen(l)
+            remote_filename = urlparse(req.geturl())[2].split('/')[-1]
+            local_filename = "%s\\%s" % (os.getcwd(), remote_filename)
+            with open(local_filename, 'wb') as download_file:
+                download_file.write(req.read())
     except:
         print "[-] Download failed"
         return None
